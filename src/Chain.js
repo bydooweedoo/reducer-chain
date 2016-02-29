@@ -1,45 +1,39 @@
 'use strict';
 
 /**
- * @alias module:reducer-sandbox
+ * @alias module:reducer-chain
  */
-const ObjectPath = require('./ObjectPath');
-let sandboxcount = -1;
+const R = require('ramda');
+const getOREmptyList = require('./utils/getOREmptyList');
 
 /**
- * @param {Function} reducer - Reducer to sandbox.
- * @param {String} [customid] - Custom sandbox id.
- * @param {String} [customkey='sandbox'] - Custom sandbox key path.
- * You can use "key1.key2.key3" notation.
+ * @example
+ * ```js
+import Chain from 'reducer-chain';
+
+const reducer = (state, action) => {
+    if (!state) state = initialState;
+    return Chain([reducer1, reducer2, reducer3])(state, action);
+};
+ * ```
+ * @param {Array.<Function>} reducers List of reducers to chain.
+ * @param {Function} [compare] Custom compare function.
+ * @return {Function} Reducer signature function. State must not be null.
  */
-function Sandbox (reducer, customid, customkey) {
-    const sandboxid = String(customid || ++sandboxcount);
-    const params = (
-        customkey ?
-        ObjectPath.create(customkey, sandboxid) :
-        { sandbox: sandboxid, }
-    );
-    const getSandboxValue = (action) => (
-        customkey ?
-        ObjectPath.get(action, customkey) :
-        action.sandbox
-    );
+const chain = (reducers, compare) => (state, action) => (
+    R.head(R.append(
+        state,
+        R.filter(R.cond([
+            [R.is(Function), f => f(state)],
+            [R.T, R.always(R.both(
+                R.compose(R.not, R.isNil),
+                R.compose(R.not, R.equals(state))
+            ))],
+        ])(compare), R.chain(
+            reducer => R.of(reducer(state, action)),
+            getOREmptyList(reducers)
+        ))
+    ))
+);
 
-    return {
-
-        dispatcher: store => action => {
-            return store.dispatch(Object.assign({}, params, action));
-        },
-
-        reducer: (state, action) => {
-            return (
-                !action || getSandboxValue(action) === sandboxid ?
-                reducer(state, action) :
-                reducer(state, {})
-            );
-        },
-
-    };
-}
-
-exports = module.exports = Sandbox;
+exports = module.exports = chain;
