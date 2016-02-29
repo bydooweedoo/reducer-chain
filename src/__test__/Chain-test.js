@@ -52,7 +52,7 @@ describe('reducer-chain', () => {
         ])(null, action)).toEqual(state.set('a', false));
     });
 
-    it('should returns first valid state if given state is empty', () => {
+    it('should returns first valid state if given state is empty #2', () => {
         return expect(chain([
             () => null,
             reducerUpdateB,
@@ -60,7 +60,7 @@ describe('reducer-chain', () => {
     });
 
     it('should use given compare if valid function', () => {
-        const compare = initial => currentState => currentState === 3;
+        const compare = initial => current => current === 3;
 
         return expect(chain([
             () => 1,
