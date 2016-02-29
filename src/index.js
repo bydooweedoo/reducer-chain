@@ -1,20 +1,19 @@
 /**
- * @module reducer-sandbox
+ * @module reducer-chain
  * @version 1.0.0
  * @example
  * Import `ES5`
  * ```js
-const reducerSandbox = require('reducer-sandbox');
+const chain = require('reducer-chain');
  * ```
  * Import `ES6`
  * ```js
-import reducerSandbox from 'reducer-sandbox';
+import chain from 'reducer-chain';
  * ```
  * @example
  * ```js
-const sandbox = reducerSandbox(reducer);
-// sandbox.reducer => is your actual sandboxed reducer
-// sandbox.dispatcher => is a function to call with store as first argument, to get sandboxed dispatch function
+const chained = chain([reducer1, reducer2, reducer3]);
+// chain(state, action) => will call all reducers with given state and action and take the first non null different one.
  * ```
  */
-exports = module.exports = require('./Sandbox');
+exports = module.exports = require('./Chain');

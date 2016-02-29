@@ -1,5 +1,5 @@
 {
-  "name": "sandbox-chain",
+  "name": "reducer-chain",
   "version": "1.0.0",
   "description": "Allows to chain reducer and keep first match changes.",
   "main": "src/index.js",
