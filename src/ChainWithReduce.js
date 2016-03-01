@@ -28,7 +28,11 @@ const reducer = (state, action) => {
 import reducerChain from 'reducer-chain';
 import * as reducers from './your-reducers';
 
-const compare = (initial, current) => (current && !current.equals(initial) ? current : initial);
+const compare = initial => (previous, current) => (
+    current && !current.equals(initial) ?
+    current :
+    previous
+);
 const reducer = reducerChain(reducers, compare);
 
 // reducer(state, action) => ...
@@ -39,7 +43,11 @@ const reducer = reducerChain(reducers, compare);
 import reducerChain from 'reducer-chain';
 import * as reducers from './your-reducers';
 
-const compare = (initial, current) => (current && !current.equals(initial) ? current : initial);
+const compare = initial => (previous, current) => (
+    current && !current.equals(initial) ?
+    current :
+    previous
+);
 const customReducerChain = reducerChain(compare);
 const reducer = customReducerChain(reducers);
 
@@ -51,7 +59,7 @@ const reducer = customReducerChain(reducers);
  * @return {Function} Reducer signature function. State must not be null.
  */
 const chain = (reducers, predicate) => (state, action) => R.reduce(
-    predicate, state, R.chain(
+    predicate(state), state, R.chain(
         reducer => R.of(reducer(state, action)),
         reducers
     )
