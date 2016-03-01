@@ -4,6 +4,8 @@
  * @alias module:reducer-chain
  */
 const R = require('ramda');
+const _reducer = require('./reducer');
+const _predicate = require('./predicate');
 
 /**
  * @example
@@ -55,47 +57,14 @@ const chain = (reducers, predicate) => (state, action) => R.reduce(
     )
 );
 
-const defaultPredicate = (initial, current) => R.ifElse(
-    R.both(
-        R.compose(R.not, R.isNil),
-        R.compose(R.not, R.equals(initial))
-    ),
-    R.identity,
-    R.always(initial)
-)(current);
-
-// const isReducer = R.both(
-//     R.is(Function),
-//     R.length(2)
-// );
-
-const isReducers = R.is(Array);
-
-const getReducers = R.ifElse(
-    isReducers,
-    R.identity,
-    R.compose(R.empty, R.of)
-);
-
-const isPredicate = R.both(
-    R.is(Function),
-    R.pipe(R.length, R.equals(2))
-);
-
-const getPredicate = R.ifElse(
-    isPredicate,
-    R.identity,
-    R.always(defaultPredicate)
-);
-
-const chainCheck = (reducers, predicate) => chain(
-    getReducers(reducers),
-    getPredicate(predicate)
+const safeChain = (reducers, predicate) => chain(
+    _reducer.gets(reducers),
+    _predicate.gets(predicate)
 );
 
 const curryChain = (arg1, arg2) => R.cond([
-    [isPredicate, predicate => R.curry(chainCheck)(R.__, predicate)],
-    [R.T, R.curry(chainCheck)(R.__, arg2)],
+    [_predicate.is, predicate => R.curry(safeChain)(R.__, predicate)],
+    [R.T, R.curry(safeChain)(R.__, arg2)],
 ])(arg1);
 
 exports = module.exports = curryChain;
