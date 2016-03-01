@@ -38,22 +38,4 @@ const chain = (reducers, predicate) => (state, action) => (
     ))
 );
 
-// need to change the predicate to be (initial, state) => newState instead of filter predicate.
-const chainWithReduce = (reducers, compare) => (state, action) => (
-    R.reduce(R.cond([
-        [R.is(Function), R.always],
-        [R.T, R.always((initial, current) => (R.ifElse(
-            R.both(
-                R.compose(R.not, R.isNil),
-                R.compose(R.not, R.equals(initial))
-            )(current),
-            current,
-            initial
-        )))],
-    ])(compare), state, R.chain(
-        reducer => R.of(reducer(state, action)),
-        getOREmptyList(reducers)
-    ))
-);
-
 exports = module.exports = chain;
