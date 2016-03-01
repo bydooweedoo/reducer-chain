@@ -7,11 +7,14 @@ const is = R.both(
     R.length(2)
 );
 
-const are = R.is(Array);
+const are = R.or(
+    R.is(Array),
+    R.is(Object)
+);
 
 const gets = R.ifElse(
     are,
-    R.identity,
+    R.values,
     R.compose(R.empty, R.of)
 );
 

@@ -26,14 +26,14 @@ const reducer = (state, action) => {
  * Using custom compare function:
  * ```js
 import reducerChain from 'reducer-chain';
-import * as reducers from './your-reducers';
+import reducers from './your-reducers';
 
 const compare = initial => (previous, current) => (
     current && !current.equals(initial) ?
     current :
     previous
 );
-const reducer = reducerChain(reducers, compare);
+const reducer = reducerChain(compare, reducers);
 
 // reducer(state, action) => ...
  * ```
@@ -41,7 +41,7 @@ const reducer = reducerChain(reducers, compare);
  * You also can curry your custom compare:
  * ```js
 import reducerChain from 'reducer-chain';
-import * as reducers from './your-reducers';
+import reducers from './your-reducers';
 
 const compare = initial => (previous, current) => (
     current && !current.equals(initial) ?
@@ -53,26 +53,32 @@ const reducer = customReducerChain(reducers);
 
 // reducer(state, action) => ...
  * ```
- * @param {Array.<Function>} reducers List of reducers to chain.
  * @param {Function} [predicate] Custom predicate function.
+ * @param {Array.<Function>} reducers List of reducers to chain.
  * Signature: (initial, current) => state.
- * @return {Function} Reducer signature function. State must not be null.
+ * @return {Function} Reducer signature function.
  */
-const chain = (reducers, predicate) => (state, action) => R.reduce(
+const chain = (predicate, reducers) => (state, action) => R.reduce(
     predicate(state), state, R.chain(
         reducer => R.of(reducer(state, action)),
         reducers
     )
 );
 
-const safeChain = (reducers, predicate) => chain(
-    _reducer.gets(reducers),
-    _predicate.gets(predicate)
+const safeChain = (predicate, reducers) => chain(
+    _predicate.gets(predicate),
+    _reducer.gets(reducers)
 );
 
+const withSingleArg = R.cond([
+    [_predicate.is, R.curry(safeChain)],
+    [_reducer.are, R.curry(safeChain)(null)],
+    [R.T, safeChain],
+]);
+
 const curryChain = (arg1, arg2) => R.cond([
-    [_predicate.is, predicate => R.curry(safeChain)(R.__, predicate)],
-    [R.T, R.curry(safeChain)(R.__, arg2)],
-])(arg1);
+    [R.isNil, R.always(withSingleArg(arg1))],
+    [R.T, R.curry(safeChain)(arg1)]
+])(arg2);
 
 exports = module.exports = curryChain;
