@@ -2,10 +2,10 @@
 
 const Immutable = require('immutable');
 const expect = require('expect');
-const chain = require('../Chain');
+const chain = require('../ChainWithFilter');
 const getOREmptyList = require('../utils/getOREmptyList');
 
-describe('reducer-chain', () => {
+describe('reducer-chain/filter', () => {
 
     const action = {
         type: 'TEST',
