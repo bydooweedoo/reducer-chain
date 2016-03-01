@@ -54,12 +54,12 @@ describe.only('reducer-chain/reduce', () => {
     it('should use given compare if valid function', () => {
         const compare = initial => (previous, current) => (current === 3 ? current : previous);
 
-        return expect(chain([
+        return expect(chain(compare, [
             () => 1,
             () => 2,
             () => 3,
             () => 4,
-        ], compare)(state, action)).toEqual(3);
+        ])(state, action)).toEqual(3);
     });
 
     it('should use default compare if given is not a function', () => {
@@ -70,9 +70,9 @@ describe.only('reducer-chain/reduce', () => {
             () => 4,
         ];
 
-        expect(chain(reducers, true)(state, action)).toEqual(4);
-        expect(chain(reducers, null)(state, action)).toEqual(4);
-        return expect(chain(reducers, [])(state, action)).toEqual(4);
+        expect(chain(true, reducers)(state, action)).toEqual(4);
+        expect(chain(null, reducers, null)(state, action)).toEqual(4);
+        return expect(chain([], reducers)(state, action)).toEqual(4);
     });
 
     it('should return curried function if given first arg is predicate', () => {
