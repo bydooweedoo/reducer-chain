@@ -8,6 +8,27 @@ const _reducer = require('./reducer');
 const _predicate = require('./predicate');
 
 /**
+ * @callback Reducer
+ * @param {any} state The state of your application.
+ * @param {Object} action Action.
+ * @return {any} Updated state.
+ */
+
+/**
+ * @callback ReduceIterator
+ * @param {any} previousState Previous state. Defaults to initial state.
+ * @param {any} currentState Current state.
+ * @return {any} State to keep.
+ */
+
+/**
+ * @callback Predicate
+ * @param {any} initialState The initial state of your application.
+ * Actually, it is the state given to the high order reducer.
+ * @return {ReduceIterator} Iterator function for reduce.
+ */
+
+/**
  * @example
  * ```js
 import reducerChain from 'reducer-chain';
@@ -53,10 +74,9 @@ const reducer = customReducerChain(reducers);
 
 // reducer(state, action) => ...
  * ```
- * @param {Function} [predicate] Custom predicate function.
- * @param {Array.<Function>} reducers List of reducers to chain.
- * Signature: (initial, current) => state.
- * @return {Function} Reducer signature function.
+ * @param {Predicate} [predicate] Custom predicate function.
+ * @param {Array.<Reducer>} reducers List of reducers to chain.
+ * @return {Reducer} High order reducer chaining given reducers list.
  */
 const chain = (predicate, reducers) => (state, action) => R.reduce(
     predicate(state), state, R.chain(
@@ -80,5 +100,11 @@ const curryChain = (arg1, arg2) => R.cond([
     [R.isNil, R.always(withSingleArg(arg1))],
     [R.T, R.curry(safeChain)(arg1)]
 ])(arg2);
+
+curryChain.curried = curryChain;
+curryChain.single = withSingleArg;
+curryChain.safe = safeChain;
+curryChain.unsafe = chain;
+curryChain.defaultPredicate = _predicate.base;
 
 exports = module.exports = curryChain;

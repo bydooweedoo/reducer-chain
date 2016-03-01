@@ -17,6 +17,12 @@ describe.only('reducer-chain/reduce', () => {
     const reducerUpdateA = () => state.set('a', false);
     const reducerUpdateB = () => state.set('b', 2);
 
+    describe('#unsafe', () => {
+        it('should returns given state if empty list of reducer given', () => {
+            return expect(chain.unsafe(chain.defaultPredicate, [])(state, action)).toEqual(state);
+        });
+    });
+
     it('should returns given state if empty list of reducer given', () => {
         return expect(chain([])(state, action)).toEqual(state);
     });
