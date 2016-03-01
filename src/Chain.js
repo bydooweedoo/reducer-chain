@@ -13,30 +13,6 @@ const getCompare = state => (R.cond([
     ))],
 ]));
 
-const chainCompare = (reducers, predicate) => (state, action) => (
-    R.reducer(predicate, state, R.chain(
-        reducer => R.of(reducer(state, action)),
-        reducers
-    ))
-);
-
-const defaultPredicate = (a, b) => a;
-
-const chainCheck = (reducers, predicate) => (
-    chainCompare(
-        R.ifElse(
-            R.is(Array),
-            R.identity,
-            R.of
-        )(reducers),
-        R.ifElse(
-            R.is(Function),
-            R.identity,
-            defaultPredicate
-        )(predicate)
-    )
-);
-
 /**
  * @example
  * ```js
