@@ -52,7 +52,7 @@ describe.only('reducer-chain/reduce', () => {
     });
 
     it('should use given compare if valid function', () => {
-        const compare = (initial, current) => (current === 3 ? current : initial);
+        const compare = initial => (previous, current) => (current === 3 ? current : previous);
 
         return expect(chain([
             () => 1,
@@ -76,7 +76,7 @@ describe.only('reducer-chain/reduce', () => {
     });
 
     it('should return curried function if given first arg is predicate', () => {
-        const compare = (initial, current) => (current === 3 ? current : initial);
+        const compare = initial => (previous, current) => (current === 3 ? current : previous);
         const reducers = [
             () => null,
             () => 2,

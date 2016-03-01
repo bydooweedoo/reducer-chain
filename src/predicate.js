@@ -2,7 +2,7 @@
 
 const R = require('ramda');
 
-const base = (initial, current) => R.ifElse(
+const base = initial => (previous, current) => R.ifElse(
     R.both(
         R.compose(R.not, R.isNil),
         R.compose(R.not, R.equals(initial))
@@ -13,7 +13,7 @@ const base = (initial, current) => R.ifElse(
 
 const is = R.both(
     R.is(Function),
-    R.pipe(R.length, R.equals(2))
+    R.pipe(R.length, R.equals(1))
 );
 
 const gets = R.ifElse(
