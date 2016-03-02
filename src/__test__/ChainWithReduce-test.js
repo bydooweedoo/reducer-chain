@@ -5,7 +5,7 @@ const Immutable = require('immutable');
 const expect = require('expect');
 const chain = require('../ChainWithReduce');
 
-describe.only('reducer-chain/reduce', () => {
+describe('reducer-chain/reduce', () => {
 
     const action = {
         type: 'TEST',
@@ -19,7 +19,7 @@ describe.only('reducer-chain/reduce', () => {
 
     describe('#unsafe', () => {
         it('should returns given state if empty list of reducer given', () => {
-            return expect(chain.unsafe(chain.defaultPredicate, [])(state, action)).toEqual(state);
+            return expect(chain.unsafe(chain.defaultIteratee, [])(state, action)).toEqual(state);
         });
     });
 
