@@ -96,15 +96,15 @@ const withSingleArg = R.cond([
     [R.T, safeChain],
 ]);
 
-const curryChain = (arg1, arg2) => R.cond([
+const curriedChain = (arg1, arg2) => R.cond([
     [R.isNil, R.always(withSingleArg(arg1))],
     [R.T, R.curry(safeChain)(arg1)]
 ])(arg2);
 
-curryChain.curried = curryChain;
-curryChain.single = withSingleArg;
-curryChain.safe = safeChain;
-curryChain.unsafe = chain;
-curryChain.defaultIteratee = _iteratee.base;
+curriedChain.curried = curriedChain;
+curriedChain.single = withSingleArg;
+curriedChain.safe = safeChain;
+curriedChain.unsafe = chain;
+curriedChain.defaultIteratee = _iteratee.base;
 
-exports = module.exports = curryChain;
+exports = module.exports = curriedChain;
