@@ -2,40 +2,69 @@
   "name": "reducer-chain",
   "version": "1.0.0",
   "description": "Allows to chain reducer and keep first match changes.",
-  "main": "src/index.js",
+  "main": "lib/index.js",
+  "jsnext:main": "es/index.js",
   "config": {
     "reporter": "spec",
-    "source_files": "package.json src/index.js src/*.js",
+    "source_files": "src/index.js src/*.js",
     "test_files": "src/__test__/*-test.js",
+    "test_lib_files": "lib/__test__/*-test.js",
     "bench_files": "src/__bench__/*-bench.js"
   },
-  "scripts": {
-    "env": "env",
-    "mocha": "mocha",
-    "matcha": "matcha",
-    "jsdoc2md": "jsdoc2md",
-    "bench": "matcha $npm_package_config_bench_files",
-    "test": "mocha $npm_package_config_test_files --reporter $npm_package_config_reporter",
-    "watch:test": "mocha -w $npm_package_config_test_files --reporter $npm_package_config_reporter",
-    "docs": "jsdoc2md --verbose --conf docs/jsdoc.json -t docs/README.hbs $npm_package_config_source_files > README.md; echo",
-    "watch:docs": "nodemon $npm_package_config_source_files docs/README.hbs --delay 250ms -x 'npm run docs'",
-    "coverage": "istanbul cover _mocha -- $npm_package_config_test_files --reporter $npm_package_config_reporter",
-    "watch:coverage": "nodemon $npm_package_config_test_files $npm_package_config_source_files --delay 2500ms -x 'npm run coverage'"
+  "nyc": {
+    "include": [
+      "src/*.js",
+      "src/utils/*.js"
+    ]
   },
-  "private": true,
-  "keywords": [],
-  "author": "bydooweedoo <bydooweedoo@gmail.com>",
-  "license": "PRIVATE",
+  "scripts": {
+    "prepublish": "npm run test && npm run build",
+    "lint": "eslint src/*.js",
+    "bench": "npm run build:commonjs && node $npm_package_config_bench_files",
+    "test": "cross-env BABEL_ENV=commonjs mocha --compilers js:babel-register $npm_package_config_test_files --reporter $npm_package_config_reporter",
+    "test:commonjs": "mocha $npm_package_config_test_lib_files --reporter $npm_package_config_reporter",
+    "test:ci": "nyc --reporter=lcov --reporter=text -- cross-env BABEL_ENV=commonjs mocha --compilers js:babel-register $npm_package_config_test_files --reporter $npm_package_config_reporter",
+    "coverage": "nyc report --reporter=lcov --reporter=text",
+    "check:commonjs": "npm run build:commonjs && npm run test:commonjs",
+    "build": "npm run build:es && npm run build:commonjs",
+    "build:es": "cross-env BABEL_ENV=es babel -q src -d es",
+    "build:commonjs": "cross-env BABEL_ENV=commonjs babel -q src -d lib",
+    "watch:test": "npm run test -- -w",
+    "watch:coverage": "nodemon $npm_package_config_test_files $npm_package_config_source_files --delay 2500ms -x 'npm run test:ci && npm run coverage'",
+    "watch:lint": "nodemon $npm_package_config_source_files -x 'eslint'"
+  },
+  "keywords": [
+    "redux",
+    "reducer",
+    "chain",
+    "immutable",
+    "ramda"
+  ],
+  "author": "Rémi Marek <bydooweedoo@gmail.com>",
+  "license": "MIT",
+  "repository": "bydooweedoo/reducer-chain",
   "dependencies": {
     "ramda": "^0.19.1"
   },
   "devDependencies": {
-    "expect": "^1.14.0",
+    "babel-cli": "^6.6.5",
+    "babel-plugin-add-module-exports": "^0.1.2",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.7.0",
+    "babel-plugin-transform-runtime": "^6.6.0",
+    "babel-polyfill": "^6.7.2",
+    "babel-preset-es2015": "^6.6.0",
+    "babel-register": "^6.7.2",
+    "babel-runtime": "^6.6.1",
+    "beautify-benchmark": "^0.2.4",
+    "benchmark": "^2.1.0",
+    "cross-env": "^1.0.7",
+    "eslint": "^2.3.0",
+    "eslint-config-airbnb": "^6.1.0",
+    "eslint-plugin-react": "^4.2.1",
+    "expect": "1.14.x",
     "immutable": "^3.7.6",
-    "istanbul": "^0.4.2",
-    "jsdoc-to-markdown": "^1.3.3",
-    "matcha": "^0.6.1",
     "mocha": "^2.4.5",
-    "nodemon": "^1.8.1"
+    "nodemon": "^1.8.1",
+    "nyc": "^6.1.1"
   }
 }

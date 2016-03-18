@@ -1,3 +1,5 @@
+import reducerChain from './reducerChain';
+
 /**
  * @module reducer-chain
  * @version 1.0.0
@@ -13,7 +15,8 @@ import reducerChain from 'reducer-chain';
  * @example
  * ```js
 const chainedReducer = reducerChain([reducer1, reducer2, reducer3]);
-// chainedReducer(state, action) => will call all reducers with given state and action and take the first non null different one.
+// chainedReducer(state, action) => will call all reducers with given state
+// and action and take the first non null different one.
  * ```
  * @example
  * Sample code:
@@ -21,7 +24,8 @@ const chainedReducer = reducerChain([reducer1, reducer2, reducer3]);
 // Chain takes 2 arguments:
 //    1. The reducer iteratee callback
 //    2. The list of reducers.
-// Then it returns a high order reducer that will call each given reducers and return the proper state.
+// Then it returns a high order reducer that will call each given reducers
+// and return the proper state.
 //
 // The iteratee callback will firstly be called with the given state.
 // Then the iteratee callback will return the reduce iteratee function which takes
@@ -35,4 +39,4 @@ const chain = (iteratee, reducers) => (state, action) => R.reduce(
 );
  * ```
  */
-exports = module.exports = require('./ChainWithReduce');
+export default reducerChain;
