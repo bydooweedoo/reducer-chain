@@ -1,11 +1,9 @@
-'use strict';
+import R from 'ramda';
+import Immutable from 'immutable';
+import expect from 'expect';
+import chain from '..';
 
-const R = require('ramda');
-const Immutable = require('immutable');
-const expect = require('expect');
-const chain = require('../ChainWithReduce');
-
-describe('reducer-chain/reduce', () => {
+describe('reducer-chain', () => {
 
     const action = {
         type: 'TEST',

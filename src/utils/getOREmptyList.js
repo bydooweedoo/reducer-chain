@@ -1,6 +1,6 @@
-const R = require('ramda');
+import R from 'ramda';
 
-exports = module.exports = R.ifElse(
+export default R.ifElse(
     R.is(Array),
     R.identity,
     R.always([])

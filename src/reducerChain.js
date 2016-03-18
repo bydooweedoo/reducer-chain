@@ -1,12 +1,17 @@
-'use strict';
-
 /**
  * @module reducer-chain
  */
 
-const R = require('ramda');
-const _reducer = require('./reducer');
-const _iteratee = require('./iteratee');
+import R from 'ramda';
+import {
+    areReducers,
+    getReducers,
+} from './reducer';
+import {
+    isIteratee,
+    defaultIteratee,
+    getIterateeOrUseDefault,
+} from './iteratee';
 
 /**
  * @callback Reducer
@@ -86,25 +91,25 @@ const chain = (iteratee, reducers) => (state, action) => R.reduce(
 );
 
 const safeChain = (iteratee, reducers) => chain(
-    _iteratee.gets(iteratee),
-    _reducer.gets(reducers)
+    getIterateeOrUseDefault(iteratee),
+    getReducers(reducers)
 );
 
 const withSingleArg = R.cond([
-    [_iteratee.is, R.curry(safeChain)],
-    [_reducer.are, R.curry(safeChain)(null)],
+    [isIteratee, R.curry(safeChain)],
+    [areReducers, R.curry(safeChain)(null)],
     [R.T, safeChain],
 ]);
 
 const curriedChain = (arg1, arg2) => R.cond([
     [R.isNil, R.always(withSingleArg(arg1))],
-    [R.T, R.curry(safeChain)(arg1)]
+    [R.T, R.curry(safeChain)(arg1)],
 ])(arg2);
 
 curriedChain.curried = curriedChain;
 curriedChain.single = withSingleArg;
 curriedChain.safe = safeChain;
 curriedChain.unsafe = chain;
-curriedChain.defaultIteratee = _iteratee.base;
+curriedChain.defaultIteratee = defaultIteratee;
 
-exports = module.exports = curriedChain;
+export default curriedChain;
