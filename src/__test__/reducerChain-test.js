@@ -2,6 +2,7 @@ import R from 'ramda';
 import Immutable from 'immutable';
 import expect from 'expect';
 import chain from '..';
+import { useFirstAsInitial } from '../compare';
 
 describe('reducer-chain', () => {
 
@@ -95,5 +96,47 @@ describe('reducer-chain', () => {
         expect(R.length(customChain(reducers))).toEqual(2);
         return expect(customChain(reducers)(state, action)).toEqual(3);
     });
+
+    describe('compare#useFirstAsInitial', () => {
+
+        it('should return last updated reducer state', () => {
+            const reducers = [
+                // initial
+                () => Object.freeze({counter: 0}),
+                // increment
+                state => Object.assign({}, state, {counter: 1}),
+                // decrement noop
+                state => state,
+            ];
+            const state = null;
+            const action = {};
+            const reducer = chain(chain.compare.useFirstAsInitial, reducers);
+
+            expect(reducer(state, action)).toEqual({counter: 1});
+        });
+
+    });
+
+    // describe('compare#useFirstAsInitialCustomEquals', () => {
+    //
+    //     it('should return last updated reducer state', () => {
+    //         const reducers = [
+    //             // initial
+    //             () => Immutable.Map({counter: 40}),
+    //             // increment
+    //             state => state.updateIn(['counter'], v => v + 1),
+    //             // decrement
+    //             state => state.updateIn(['counter'], v => v - 1),
+    //         ];
+    //         const state = null;
+    //         const action = {};
+    //         const reducer = chain(chain.compare.useFirstAsInitialCustomEquals(
+    //             (initial, current) => initial.equals(current)
+    //         ), reducers);
+    //
+    //         expect(reducer(state, action)).toEqual({counter: 42});
+    //     });
+    //
+    // });
 
 });

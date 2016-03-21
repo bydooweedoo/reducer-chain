@@ -12,6 +12,7 @@ import {
     defaultIteratee,
     getIterateeOrUseDefault,
 } from './iteratee';
+import * as compare from './compare';
 
 /**
  * @callback Reducer
@@ -111,5 +112,6 @@ curriedChain.single = withSingleArg;
 curriedChain.safe = safeChain;
 curriedChain.unsafe = chain;
 curriedChain.defaultIteratee = defaultIteratee;
+curriedChain.compare = compare;
 
 export default curriedChain;
