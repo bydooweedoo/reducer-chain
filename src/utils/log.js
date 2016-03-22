@@ -1,6 +1,6 @@
 import R from 'ramda';
 
-export const debug = R.tap(console.log);
+export const debug = R.tap(console.log.bind(console));
 
 export const debugType = R.tap(R.pipe(R.type, debug));
 

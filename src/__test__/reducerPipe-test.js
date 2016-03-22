@@ -44,7 +44,7 @@ describe('reducer-pipe', () => {
         const spy2 = expect.createSpy().andReturn(state.set('a', 'from spy2'));
         const spy3 = expect.createSpy().andReturn(null);
 
-        expect(reducerPipe(compareWithPrevious, [spy1, spy2, spy3])(state, action)).toEqual(state.set('a', 'from spy2'));
+        expect(reducerPipe([spy1, spy2, spy3])(state, action)).toEqual(state.set('a', 'from spy2'));
         expect(spy3).toHaveBeenCalled();
         expect(spy3.calls.length).toEqual(1);
         expect(spy3).toHaveBeenCalledWith(state.set('a', 'from spy2'), action);
