@@ -1,142 +1,246 @@
 import R from 'ramda';
 import Immutable from 'immutable';
 import expect from 'expect';
-import chain from '..';
-import { useFirstAsInitial } from '../compare';
+import reducerChain from '..';
 
 describe('reducer-chain', () => {
 
-    const action = {
-        type: 'TEST',
-    };
+    const action = {type: 'TEST'};
     const state = Immutable.Map({
         a: true,
-        b: 1,
+        b: 0,
     });
-    const reducerUpdateA = () => state.set('a', false);
-    const reducerUpdateB = () => state.set('b', 2);
-
-    describe('#unsafe', () => {
-        it('should returns given state if empty list of reducer given', () => {
-            return expect(chain.unsafe(chain.defaultIteratee, [])(state, action)).toEqual(state);
-        });
-    });
+    const state1 = state.set('b', 1);
+    const state2 = state.set('b', 2);
+    const state3 = state.set('b', 3);
 
     it('should returns given state if empty list of reducer given', () => {
-        return expect(chain([])(state, action)).toEqual(state);
+        const reducer = reducerChain([]);
+
+        expect(reducer(state, action)).toBe(state);
     });
 
     it('should returns given state if no array given', () => {
-        return expect(chain(null)(state, action)).toEqual(state);
+        const reducer = reducerChain(null);
+
+        expect(reducer(state, action)).toBe(state);
     });
 
-    it('should pass given state and action to reducer', () => {
-        const spy = expect.createSpy().andReturn(state.remove('b'));
+    it('should call all reducers once', () => {
+        const spy1 = expect.createSpy().andReturn(null);
+        const spy2 = expect.createSpy().andReturn(null);
+        const spy3 = expect.createSpy().andReturn(null);
+        const reducer = reducerChain([spy1, spy2, spy3]);
 
-        expect(chain([spy])(state, action)).toEqual(state.remove('b'));
-        return expect(spy).toHaveBeenCalledWith(state, action);
+        reducer(state, action);
+        expect(spy1).toHaveBeenCalled();
+        expect(spy1.calls.length).toEqual(1);
+        expect(spy2).toHaveBeenCalled();
+        expect(spy2.calls.length).toEqual(1);
+        expect(spy3).toHaveBeenCalled();
+        expect(spy3.calls.length).toEqual(1);
     });
 
-    it('should returns updated state', () => {
-        return expect(chain([
-            reducerUpdateA,
-        ])(state, action)).toEqual(state.set('a', false));
+    it('should call all reducers with same given state and action', () => {
+        const spy1 = expect.createSpy().andReturn(null);
+        const spy2 = expect.createSpy().andReturn(null);
+        const spy3 = expect.createSpy().andReturn(null);
+        const reducer = reducerChain([spy1, spy2, spy3]);
+
+        reducer(state, action);
+        expect(spy1).toHaveBeenCalled();
+        expect(spy1).toHaveBeenCalledWith(state, action);
+        expect(spy2).toHaveBeenCalled();
+        expect(spy2).toHaveBeenCalledWith(state, action);
+        expect(spy3).toHaveBeenCalled();
+        expect(spy3).toHaveBeenCalledWith(state, action);
     });
 
-    it('should returns first valid state if given state is empty', () => {
-        return expect(chain([
-            reducerUpdateA,
-        ])(null, action)).toEqual(state.set('a', false));
+    it('should returns last reducer result that does not equals given state', () => {
+        const spy1 = expect.createSpy().andReturn(state1);
+        const spy2 = expect.createSpy().andReturn(state2);
+        const spy3 = expect.createSpy().andReturn(state3);
+        const reducer = reducerChain([spy1, spy2, spy3]);
+
+        expect(reducer(state, action)).toBe(state3);
     });
 
-    it('should returns first valid state if given state is empty #2', () => {
-        return expect(chain([
-            () => null,
-            reducerUpdateB,
-        ])(null, action)).toEqual(state.set('b', 2));
+    it('should returns given state if all reducers returns null', () => {
+        const spy1 = expect.createSpy().andReturn(null);
+        const spy2 = expect.createSpy().andReturn(null);
+        const spy3 = expect.createSpy().andReturn(null);
+        const reducer = reducerChain([spy1, spy2, spy3]);
+
+        expect(reducer(state, action)).toBe(state);
     });
 
-    it('should use given compare if valid function', () => {
-        const compare = initial => (previous, current) => (current === 3 ? current : previous);
+    it('should returns only non null state', () => {
+        const spy1 = expect.createSpy().andReturn(null);
+        const spy2 = expect.createSpy().andReturn(state2);
+        const spy3 = expect.createSpy().andReturn(null);
+        const reducer = reducerChain([spy1, spy2, spy3]);
 
-        return expect(chain(compare, [
-            () => 1,
-            () => 2,
-            () => 3,
-            () => 4,
-        ])(state, action)).toEqual(3);
+        expect(reducer(state, action)).toBe(state2);
     });
 
-    it('should use default compare if given is not a function', () => {
-        const reducers = [
-            () => null,
-            () => 2,
-            () => 3,
-            () => 4,
-        ];
+    describe('#compare', () => {
 
-        expect(chain(true, reducers)(state, action)).toEqual(4);
-        expect(chain(null, reducers, null)(state, action)).toEqual(4);
-        return expect(chain([], reducers)(state, action)).toEqual(4);
-    });
+        describe('custom - reducerChain(customCompare, reducers)', () => {
 
-    it('should return curried function if given first arg is predicate', () => {
-        const compare = initial => (previous, current) => (current === 3 ? current : previous);
-        const reducers = [
-            () => null,
-            () => 2,
-            () => 3,
-            () => 4,
-        ];
-        const customChain = chain(compare);
+            let spy1;
+            let spy2;
+            let spy3;
+            let iteratee;
+            let compare;
 
-        expect(customChain).toBeA('function');
-        expect(R.length(customChain)).toEqual(1);
-        expect(customChain(reducers)).toBeA('function');
-        expect(R.length(customChain(reducers))).toEqual(2);
-        return expect(customChain(reducers)(state, action)).toEqual(3);
-    });
+            beforeEach(() => {
+                spy1 = expect.createSpy().andReturn(state1);
+                spy2 = expect.createSpy().andReturn(state2);
+                spy3 = expect.createSpy().andReturn(state3);
+                iteratee = expect.createSpy().andReturn(state);
+                compare = expect.createSpy().andReturn(iteratee);
+            });
 
-    describe('compare#useFirstAsInitial', () => {
+            it('should use given compare instead of default', () => {
+                const reducer = reducerChain(compare, [spy1, spy2, spy3]);
 
-        it('should return last updated reducer state', () => {
-            const reducers = [
-                // initial
-                () => Object.freeze({counter: 0}),
-                // increment
-                state => Object.assign({}, state, {counter: 1}),
-                // decrement noop
-                state => state,
-            ];
-            const state = null;
-            const action = {};
-            const reducer = chain(chain.compare.useFirstAsInitial, reducers);
+                reducer(state, action);
+                expect(compare).toHaveBeenCalled();
+            });
 
-            expect(reducer(state, action)).toEqual({counter: 1});
+            it('should call given compare once with given state', () => {
+                const reducer = reducerChain(compare, [spy1, spy2, spy3]);
+
+                reducer(state, action);
+                expect(compare.calls.length).toEqual(1);
+                expect(compare).toHaveBeenCalledWith(state);
+            });
+
+            it('should call returned iteratee once for each reducer', () => {
+                const reducer = reducerChain(compare, [spy1, spy2, spy3]);
+
+                reducer(state, action);
+                expect(iteratee.calls.length).toEqual(3);
+            });
+
+            it('should call returned iteratee with initial state and state1 first', () => {
+                const reducer = reducerChain(compare, [spy1, spy2, spy3]);
+
+                reducer(state, action);
+                expect(iteratee).toHaveBeenCalledWith(state, state1);
+                expect(iteratee.calls[0].arguments).toEqual([state, state1]);
+            });
+
+            it('should call returned iteratee with returned state and state2 second', () => {
+                const reducer = reducerChain(compare, [spy1, spy2, spy3]);
+
+                reducer(state, action);
+                expect(iteratee).toHaveBeenCalledWith(state, state2);
+                expect(iteratee.calls[1].arguments).toEqual([state, state2]);
+            });
+
+            it('should call returned iteratee with returned state and state3 third', () => {
+                const reducer = reducerChain(compare, [spy1, spy2, spy3]);
+
+                reducer(state, action);
+                expect(iteratee).toHaveBeenCalledWith(state, state3);
+                expect(iteratee.calls[2].arguments).toEqual([state, state3]);
+            });
+
+            it('should call returned iteratee with previous and current state', () => {
+                const reducer = reducerChain(compare, [spy1, spy2, spy3]);
+
+                reducer(state, action);
+                expect(iteratee).toHaveBeenCalledWith(state, state1);
+                expect(iteratee).toHaveBeenCalledWith(state, state2);
+                expect(iteratee).toHaveBeenCalledWith(state, state3);
+            });
+
+        });
+
+        describe('curry - reducerChain(customCompare)(reducers)', () => {
+
+            let spy1;
+            let spy2;
+            let spy3;
+            let iteratee;
+            let compare;
+            let customChain;
+
+            beforeEach(() => {
+                spy1 = expect.createSpy().andReturn(state1);
+                spy2 = expect.createSpy().andReturn(state2);
+                spy3 = expect.createSpy().andReturn(state3);
+                iteratee = expect.createSpy().andReturn(state);
+                compare = expect.createSpy().andReturn(iteratee);
+                customChain = reducerChain(compare);
+            });
+
+            it('should return curried function if only compare given', () => {
+                expect(customChain).toBeA(Function);
+            });
+
+            it('should return high order reducer when pass reducers to curried function', () => {
+                expect(customChain([spy1, spy2, spy3])).toBeA(Function);
+            });
+
+            it('should called curried function with previously given compare', () => {
+                const reducer = customChain([spy1, spy2, spy3]);
+
+                reducer(state, action);
+                expect(compare).toHaveBeenCalled();
+            });
+
+            it('should called given compare with given state once', () => {
+                const reducer = customChain([spy1, spy2, spy3]);
+
+                reducer(state, action);
+                expect(compare.calls.length).toEqual(1);
+                expect(compare).toHaveBeenCalledWith(state);
+            });
+
+            it('should call returned iteratee once for each reducer', () => {
+                const reducer = customChain([spy1, spy2, spy3]);
+
+                reducer(state, action);
+                expect(iteratee.calls.length).toEqual(3);
+            });
+
+            it('should call returned iteratee with initial state and state1 first', () => {
+                const reducer = customChain([spy1, spy2, spy3]);
+
+                reducer(state, action);
+                expect(iteratee).toHaveBeenCalledWith(state, state1);
+                expect(iteratee.calls[0].arguments).toEqual([state, state1]);
+            });
+
+            it('should call returned iteratee with returned state and state2 second', () => {
+                const reducer = customChain([spy1, spy2, spy3]);
+
+                reducer(state, action);
+                expect(iteratee).toHaveBeenCalledWith(state, state2);
+                expect(iteratee.calls[1].arguments).toEqual([state, state2]);
+            });
+
+            it('should call returned iteratee with returned state and state3 third', () => {
+                const reducer = customChain([spy1, spy2, spy3]);
+
+                reducer(state, action);
+                expect(iteratee).toHaveBeenCalledWith(state, state3);
+                expect(iteratee.calls[2].arguments).toEqual([state, state3]);
+            });
+
+            it('should call returned iteratee with previous and current state', () => {
+                const reducer = customChain([spy1, spy2, spy3]);
+
+                reducer(state, action);
+                expect(iteratee).toHaveBeenCalledWith(state, state1);
+                expect(iteratee).toHaveBeenCalledWith(state, state2);
+                expect(iteratee).toHaveBeenCalledWith(state, state3);
+            });
+
         });
 
     });
-
-    // describe('compare#useFirstAsInitialCustomEquals', () => {
-    //
-    //     it('should return last updated reducer state', () => {
-    //         const reducers = [
-    //             // initial
-    //             () => Immutable.Map({counter: 40}),
-    //             // increment
-    //             state => state.updateIn(['counter'], v => v + 1),
-    //             // decrement
-    //             state => state.updateIn(['counter'], v => v - 1),
-    //         ];
-    //         const state = null;
-    //         const action = {};
-    //         const reducer = chain(chain.compare.useFirstAsInitialCustomEquals(
-    //             (initial, current) => initial.equals(current)
-    //         ), reducers);
-    //
-    //         expect(reducer(state, action)).toEqual({counter: 42});
-    //     });
-    //
-    // });
 
 });

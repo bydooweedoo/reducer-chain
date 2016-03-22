@@ -1,7 +1,3 @@
-/**
- * @module reducer-chain
- */
-
 import R from 'ramda';
 import {
     areReducers,
@@ -22,14 +18,21 @@ const pipe = (iteratee, reducers) => (state, action) => {
     }, state, reducers);
 };
 
-const safePipe = (iteratee, reducers) => pipe(
-    getIterateeOrUseDefault(iteratee),
-    getReducers(reducers)
-);
+const safePipe = R.converge(pipe, [
+    R.pipe(R.nthArg(0), getIterateeOrUseDefault),
+    R.pipe(R.nthArg(1), getReducers),
+]);
+
+const safePipeCurried = R.curryN(2, safePipe);
+
+// const safePipe = (iteratee, reducers) => pipe(
+//     getIterateeOrUseDefault(iteratee),
+//     getReducers(reducers)
+// );
 
 const withSingleArg = R.cond([
-    [isIteratee, R.curry(safePipe)],
-    [areReducers, R.curry(safePipe)(null)],
+    [isIteratee, safePipeCurried],
+    [areReducers, safePipeCurried(null)],
     [R.T, safePipe],
 ]);
 
@@ -38,11 +41,6 @@ const curriedPipe = (arg1, arg2) => R.cond([
     [R.T, R.curry(safePipe)(arg1)],
 ])(arg2);
 
-curriedPipe.curried = curriedPipe;
-curriedPipe.single = withSingleArg;
-curriedPipe.safe = safePipe;
-curriedPipe.unsafe = pipe;
-curriedPipe.defaultIteratee = defaultIteratee;
 curriedPipe.compare = compare;
 
 export default curriedPipe;

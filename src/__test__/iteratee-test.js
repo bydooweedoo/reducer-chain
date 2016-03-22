@@ -33,14 +33,14 @@ describe('iteratee', () => {
 
         it('should take initial state and return a reduce iteratee', () => {
             expect(iteratee.defaultIteratee(null)).toBeA(Function);
-            expect(R.length(iteratee.defaultIteratee(null))).toEqual(2);
         });
 
-        it('should returns initial state if current if nil', () => {
+        it('should returns previous state if current if nil', () => {
             const initialState = {test: true};
+            const previousState = {test: false};
             const f = iteratee.defaultIteratee(initialState);
 
-            expect(f(null, null)).toBe(initialState);
+            expect(f(previousState, null)).toBe(previousState);
         });
 
         it('should returns current state if current is not nil and differs from initial state', () => {
@@ -51,13 +51,13 @@ describe('iteratee', () => {
             expect(f(null, currentState)).toBe(currentState);
         });
 
-        it('should returns initial state if current is not nil but equals to initial state', () => {
+        it('should returns previous state if current is not nil but equals to initial state', () => {
             const initialState = {test: true};
-            const currentState = {test: true};
+            const previousState = {test: false};
+            const currentState = initialState;
             const f = iteratee.defaultIteratee(initialState);
 
-            expect(f(null, currentState)).toBe(initialState);
-            expect(f(null, currentState)).toNotBe(currentState);
+            expect(f(previousState, currentState)).toBe(previousState);
         });
 
     });
