@@ -2,7 +2,6 @@ import R from 'ramda';
 import Immutable from 'immutable';
 import expect from 'expect';
 import reducerPipe from '../reducerPipe';
-import { compareWithPrevious } from '../compare';
 
 describe('reducer-pipe', () => {
 
