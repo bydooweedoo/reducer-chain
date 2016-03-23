@@ -42,17 +42,14 @@ describe('reducer-chain', () => {
     });
 
     it('should call all reducers with same given state and action', () => {
-        const spy1 = expect.createSpy().andReturn(null);
-        const spy2 = expect.createSpy().andReturn(null);
-        const spy3 = expect.createSpy().andReturn(null);
+        const spy1 = expect.createSpy().andReturn(state1);
+        const spy2 = expect.createSpy().andReturn(state2);
+        const spy3 = expect.createSpy().andReturn(state3);
         const reducer = reducerChain([spy1, spy2, spy3]);
 
         reducer(state, action);
-        expect(spy1).toHaveBeenCalled();
         expect(spy1).toHaveBeenCalledWith(state, action);
-        expect(spy2).toHaveBeenCalled();
         expect(spy2).toHaveBeenCalledWith(state, action);
-        expect(spy3).toHaveBeenCalled();
         expect(spy3).toHaveBeenCalledWith(state, action);
     });
 
