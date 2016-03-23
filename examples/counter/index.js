@@ -1,13 +1,30 @@
-import reducerChain from 'reducer-chain';
-import initialState from './states/initial';
-import incrementReducer from './reducers/increment';
-import decrementReducer from './reducers/decrement';
+import assert from 'assert';
+import reducer from './reducers';
 
-const reducers = reducerChain([
-  incrementReducer,
-  decrementReducer,
-]);
+let state;
 
-export default (state, action) => {
-  return reducers(state ? state : initialState, action);
-};
+state = reducer(null, {});
+assert(state.counter === 0);
+
+state = reducer(state, { type: 'INCREMENT' });
+assert(state.counter === 1);
+
+state = reducer(state, { type: 'DECREMENT' });
+assert(state.counter === 0);
+
+state = reducer(state, { type: 'INCREMENT' });
+state = reducer(state, { type: 'INCREMENT' });
+state = reducer(state, { type: 'INCREMENT' });
+assert(state.counter === 3);
+
+state = reducer(state, { type: 'DECREMENT' });
+state = reducer(state, { type: 'DECREMENT' });
+state = reducer(state, { type: 'DECREMENT' });
+assert(state.counter === 0);
+
+state = reducer(state, { type: 'INCREMENT' });
+state = reducer(state, { type: 'DECREMENT' });
+state = reducer(state, { type: 'DECREMENT' });
+assert(state.counter === 0);
+
+console.log('OK');

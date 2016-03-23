@@ -1,14 +1,9 @@
 import R from 'ramda';
 import {
-    areReducers,
-    getReducers,
-} from './reducer';
-import {
-    isIteratee,
-    defaultIteratee,
-    getIterateeOrUseDefault,
-} from './iteratee';
-import * as compare from './compare';
+    reducer as utilsReducer,
+    iteratee as utilsIteratee,
+    compare as utilsCompare,
+} from 'reducer-utils';
 
 /**
  * Calls each reducers from list with given state and action and then
@@ -38,15 +33,15 @@ const chain = (iteratee, reducers) => (state, action) => R.reduce(
 );
 
 const safeChain = R.converge(chain, [
-    R.pipe(R.nthArg(0), getIterateeOrUseDefault),
-    R.pipe(R.nthArg(1), getReducers),
+    R.pipe(R.nthArg(0), utilsIteratee.getIterateeOrUseDefault),
+    R.pipe(R.nthArg(1), utilsReducer.getReducers),
 ]);
 
 const safeChainCurried = R.curryN(2, safeChain);
 
 const withSingleArg = R.cond([
-    [isIteratee, safeChainCurried],
-    [areReducers, safeChainCurried(null)],
+    [utilsIteratee.isIteratee, safeChainCurried],
+    [utilsReducer.areReducers, safeChainCurried(null)],
     [R.T, safeChain],
 ]);
 
@@ -57,6 +52,6 @@ const curriedChain = R.unapply(
     ])
 );
 
-curriedChain.compare = compare;
+curriedChain.compare = utilsCompare;
 
 export default curriedChain;

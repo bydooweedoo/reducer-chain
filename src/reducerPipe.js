@@ -1,38 +1,28 @@
 import R from 'ramda';
 import {
-    areReducers,
-    getReducers,
-} from './reducer';
-import {
-    isIteratee,
-    defaultIteratee,
-    getIterateeOrUseDefault,
-} from './iteratee';
-import * as compare from './compare';
+    reducer as utilsReducer,
+    iteratee as utilsIteratee,
+    compare as utilsCompare,
+} from 'reducer-utils';
 
 const pipe = (iteratee, reducers) => (state, action) => {
     const compare = iteratee(state);
 
-    return R.reduce((savedState, reducer) => {
-        return compare(savedState, reducer(savedState, action));
-    }, state, reducers);
+    return R.reduce((savedState, reducer) => compare(
+        savedState, reducer(savedState, action)
+    ), state, reducers);
 };
 
 const safePipe = R.converge(pipe, [
-    R.pipe(R.nthArg(0), getIterateeOrUseDefault),
-    R.pipe(R.nthArg(1), getReducers),
+    R.pipe(R.nthArg(0), utilsIteratee.getIterateeOrUseDefault),
+    R.pipe(R.nthArg(1), utilsReducer.getReducers),
 ]);
 
 const safePipeCurried = R.curryN(2, safePipe);
 
-// const safePipe = (iteratee, reducers) => pipe(
-//     getIterateeOrUseDefault(iteratee),
-//     getReducers(reducers)
-// );
-
 const withSingleArg = R.cond([
-    [isIteratee, safePipeCurried],
-    [areReducers, safePipeCurried(null)],
+    [utilsIteratee.isIteratee, safePipeCurried],
+    [utilsReducer.areReducers, safePipeCurried(null)],
     [R.T, safePipe],
 ]);
 
@@ -41,6 +31,6 @@ const curriedPipe = (arg1, arg2) => R.cond([
     [R.T, R.curry(safePipe)(arg1)],
 ])(arg2);
 
-curriedPipe.compare = compare;
+curriedPipe.compare = utilsCompare;
 
 export default curriedPipe;
