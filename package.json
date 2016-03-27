@@ -1,9 +1,15 @@
 {
   "name": "reducer-chain",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Allows to chain redux reducers with given state and action, then keep last updated state.",
   "main": "lib/index.js",
   "jsnext:main": "es/index.js",
+  "files": [
+    "es",
+    "lib",
+    "src",
+    "dist"
+  ],
   "config": {
     "reporter": "spec",
     "source_files": "src/index.js src/*.js",
@@ -17,7 +23,7 @@
     ]
   },
   "scripts": {
-    "prepublish": "npm run test && npm run build",
+    "prepublish": "npm run lint && npm run test && npm run build",
     "lint": "eslint src/*.js",
     "bench": "npm run build:commonjs && node $npm_package_config_bench_files",
     "test": "cross-env BABEL_ENV=commonjs mocha --compilers js:babel-register $npm_package_config_test_files --reporter $npm_package_config_reporter",
@@ -25,7 +31,7 @@
     "test:ci": "nyc --reporter=lcov --reporter=text -- cross-env BABEL_ENV=commonjs mocha --compilers js:babel-register $npm_package_config_test_files --reporter $npm_package_config_reporter",
     "coverage": "nyc report --reporter=lcov --reporter=text",
     "check:commonjs": "npm run build:commonjs && npm run test:commonjs",
-    "build": "npm run build:es && npm run build:commonjs",
+    "build": "npm run build:es && npm run build:commonjs && npm run build:umd && npm run build:umd:min",
     "build:es": "cross-env BABEL_ENV=es babel -q src -d es",
     "build:commonjs": "cross-env BABEL_ENV=commonjs babel -q src -d lib",
     "build:umd": "cross-env BABEL_ENV=commonjs NODE_ENV=development webpack src/index.js dist/reducer-chain.js",
@@ -59,7 +65,7 @@
     "eslint": "^2.3.0",
     "eslint-config-airbnb": "^6.1.0",
     "eslint-plugin-react": "^4.2.1",
-    "expect": "1.14.x",
+    "expect": "^1.16.x",
     "immutable": "^3.7.6",
     "mocha": "^2.4.5",
     "nodemon": "^1.8.1",
